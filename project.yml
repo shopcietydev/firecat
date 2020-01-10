@@ -1,0 +1,275 @@
+name: XcodeGen
+configs:
+  Fennec: Fennec
+configFiles:
+  Fennec: Client/Configuration/Fennec.xcconfig
+settings:
+  configs:
+    Fennec:
+      CLANG_ENABLE_MODULES: "YES"
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon_Developer
+      ALWAYS_SEARCH_USER_PATHS: "NO"
+      CODE_SIGN_ENTITLEMENTS: "$(inherit)Client/Entitlements/FennecApplication.entitlements"
+      CODE_SIGN_IDENTITY: iPhone Developer
+      DEVELOPMENT_TEAM: 43AQ936H96
+      ENABLE_BITCODE: "NO"
+      FRAMEWORK_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)"
+        - "$(PROJECT_DIR)/Carthage/Build/iOS"
+      HEADER_SEARCH_PATHS:
+        - "$(inherited)"
+        - "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+        - "$(SRCROOT)"
+        - "$(SDKROOT)/usr/include/libxml2"
+        - "$(BUILD_DIR)/Debug$(EFFECTIVE_PLATFORM_NAME)/include/**"
+        - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)/include/**"
+      INFOPLIST_FILE: Client/Info.plist
+      IPHONEOS_DEPLOYMENT_TARGET: "11.0"
+      LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+      OTHER_LDFLAGS:
+        - "-ObjC"
+        - "-lxml2"
+        - "-framework"
+        - AssetsLibrary
+        - "-framework"
+        - CoreText
+        - "-framework"
+        - CoreTelephony
+        - "-framework"
+        - SystemConfiguration
+        - "-framework"
+        - QuartzCore
+        - "-framework"
+        - CoreVideo
+        - "-framework"
+        - AVFoundation
+        - "-framework"
+        - CoreMedia
+      OTHER_SWIFT_FLAGS: "-DMOZ_CHANNEL_FENNEC -DMOZ_TARGET_CLIENT"
+      PROVISIONING_PROFILE_SPECIFIER: Fennec Development
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      SWIFT_VERSION: "5.0"
+targets:
+  Shared:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Shared
+        includes:
+          - "*.swift"
+          - "Extensions/*.swift"
+          - "*.{h,m}"
+      - path: Client
+        includes:
+          - "Frontend/Strings.swift"
+      - path: ThirdParty
+        includes:
+          - "Result/*.swift"
+          - "Deferred/Deferred/*.swift"
+          - Reachability.swift
+    dependencies:
+      - carthage: ObjcExceptionBridging
+      - carthage: Sentry
+      - carthage: SwiftKeychainWrapper
+      - carthage: XCGLogger
+    settings:
+      INFOPLIST_FILE: Shared/Supporting Files/Info.plist
+      LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @loader_path/Frameworks"
+      SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Shared/Shared-Bridging-Header.h"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Shared
+      PRODUCT_NAME: $(TARGET_NAME)
+  SyncTelemetry:
+    type: framework
+    platform: iOS
+    sources:
+      - path: SyncTelemetry
+        includes:
+          - "*.swift"
+    settings:
+      INFOPLIST_FILE: SyncTelemetry/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.SyncTelemetry
+      PRODUCT_NAME: $(TARGET_NAME)
+    dependencies:
+      - target: Shared
+  Storage:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Storage
+        includes:
+          - "*.swift"
+          - "Rust/*.swift"
+          - "SQL/*.swift"
+          - "ThirdParty/*.swift"
+      - path: Client
+        includes:
+          - "Frontend/photon*.swift"
+    settings:
+      INFOPLIST_FILE: Storage/Info.plist
+      SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Storage/Storage-Bridging-Header.h"
+      HEADER_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$SRCROOT/Shared"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Storage
+      PRODUCT_NAME: $(TARGET_NAME)
+    dependencies:
+      - target: Shared
+      - carthage: XCGLogger
+      - carthage: ObjcExceptionBridging
+      - framework: Carthage/Build/iOS/Static/MozillaAppServices.framework
+      - carthage: Fuzi
+      - carthage: SDWebImage
+      - carthage: SwiftyJSON
+  Account:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Account
+        includes:
+          - "*.swift"
+        excludes:
+          - "FxAPushMessageHandler.swift"
+      - path: Push
+        includes:
+          - "*.swift"
+    settings:
+      INFOPLIST_FILE: Account/Info.plist
+      SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Account/Account-Bridging-Header.h"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Account
+      PRODUCT_NAME: $(TARGET_NAME)
+    dependencies:
+      - target: Storage
+      - target: Shared
+      - framework: FxA/Carthage/Build/iOS/FxA.framework # ./FxA carthage build --no-skip-current
+      - carthage: XCGLogger
+      - carthage: ObjcExceptionBridging
+  Sync:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Sync
+        includes:
+          - "*.swift"
+          - "Synchronizers/*.swift"
+    settings:
+      INFOPLIST_FILE: Sync/Info.plist
+      SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Sync/Sync-Bridging-Header.h"
+      HEADER_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$SRCROOT/Storage"
+        - "$SRCROOT/Shared"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Sync
+      PRODUCT_NAME: $(TARGET_NAME)
+    dependencies:
+      - target: Shared
+      - target: Account
+      - target: Storage
+      - target: SyncTelemetry
+  Client:
+    type: application
+    platform: iOS
+    sources:
+      - "Account/FxAPushMessageHandler.swift"
+      - path: Client
+        includes:
+          - "*.swift"
+          - "Application/*.swift"
+          - "Extensions/*.swift"
+          - "Frontend/*.swift"
+          - "Frontend/Accessors/*.swift"
+          - "Frontend/AuthenticationManager/*.swift"
+          - "Frontend/Browser/*.swift"
+          - "Frontend/Browser/BrowserViewController/*.swift"
+          - "Frontend/Extensions/*.swift"
+          - "Frontend/Home/*.swift"
+          - "Frontend/InternalSchemeHandler/*.swift"
+          - "Frontend/Intro/*.swift"
+          - "Frontend/Library/*.swift"
+          - "Frontend/Library/LibraryViewController/*.swift"
+          - "Frontend/Login Management/*.swift"
+          - "Frontend/Reader/*.{swift,h,m}"
+          - "Frontend/Settings/*.swift"
+          - "Frontend/Share/*.swift"
+          - "Frontend/Theme/*.swift"
+          - "Frontend/Widgets/*.swift"
+          - "Frontend/Widgets/PhotonActionSheet/*.swift"
+          - "Helpers/*.swift"
+          - "Telemetry/*.swift"
+          - "Utils/*.{swift,h,m}"
+        excludes:
+          - "Frontend/Browser/FaviconManager.swift"
+          - "Utils/Try.m"
+          - "Frontend/Strings.swift"
+      - path: content-blocker-lib-ios
+        includes:
+          - "src/*.swift"
+      - path: Providers
+        includes:
+          - "*.swift"
+      - path: ThirdParty
+        includes:
+          - "*.swift"
+          - "UIImageViewAligned/*.{h,m}"
+          - "Apple/*.{h,m}"
+        excludes:
+          - "Reachability.swift"
+      - "XCUITests/WebPagesForTesting.swift"
+      # Resources
+      - path: Client
+        includes:
+          - "**/*.{css,html,txt,xib,xcassets}"
+          - "Assets/**/*.js"
+          - "Assets/top_sites.json"
+          - "MailSchemes.plist"
+          - "en.lproj"
+          - "Assets/Fonts/*.ttf"
+          - "TopSites"
+          - "Assets/SearchPlugins"
+          - "Frontend/UserContent/UserScripts/AllFrames/AtDocumentEnd/FocusHelper.js"
+      - path: content-blocker-lib-ios/Lists
+        includes:
+          - "*.{json}"
+    settings:
+      INFOPLIST_FILE: Client/Info.plist
+      SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Client/Client-Bridging-Header.h"
+      HEADER_SEARCH_PATHS:
+        - "$SRCROOT/Client/Frontend/Reader"
+        - "$SRCROOT/Client/Utils"
+        - "$SRCROOT/ThirdParty/UIImageViewAligned"
+        - "$SRCROOT/ThirdParty/Apple"
+        - "$SRCROOT"
+        - "$SRCROOT/Shared"
+        - "$SRCROOT/Storage"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Fennec
+      PRODUCT_NAME: $(TARGET_NAME)
+    postCompileScripts:
+      - name: Copy Settings.bundle
+        script: |
+          if [ "${INCLUDE_SETTINGS_BUNDLE}" = "YES" ]
+          then
+            cp -r "${PROJECT_DIR}/${TARGET_NAME}/Application/Settings.bundle" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app"
+          fi
+    dependencies:
+      - sdk: Accelerate.framework
+      - sdk: SafariServices.framework
+      - target: Shared
+      - target: Account
+      - target: Storage
+      - target: SyncTelemetry
+      - target: Sync
+      - carthage: SDWebImage
+      - carthage: SnapKit
+      - carthage: ObjcExceptionBridging
+      - carthage: XCGLogger
+      - carthage: AdjustSdk
+      - carthage: GCDWebServers
+      - carthage: OnePasswordExtension
+      - carthage: SwiftKeychainWrapper
+      - carthage: Fuzi
+      - carthage: SwiftyJSON
+      - carthage: Sentry
+      - carthage: Telemetry
+      - carthage: SwiftProtobuf
+      - carthage: Leanplum
+      - framework: FxA/Carthage/Build/iOS/FxA.framework # ./FxA carthage build --no-skip-current
