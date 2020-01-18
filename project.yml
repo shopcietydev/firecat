@@ -9,43 +9,43 @@ settings:
       CLANG_ENABLE_MODULES: "YES"
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon_Developer
       ALWAYS_SEARCH_USER_PATHS: "NO"
-      CODE_SIGN_ENTITLEMENTS: "$(inherit)Client/Entitlements/FennecApplication.entitlements"
-      CODE_SIGN_IDENTITY: iPhone Developer
-      DEVELOPMENT_TEAM: 43AQ936H96
-      ENABLE_BITCODE: "NO"
-      FRAMEWORK_SEARCH_PATHS:
-        - "$(inherited)"
-        - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)"
-        - "$(PROJECT_DIR)/Carthage/Build/iOS"
-      HEADER_SEARCH_PATHS:
-        - "$(inherited)"
-        - "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-        - "$(SRCROOT)"
-        - "$(SDKROOT)/usr/include/libxml2"
-        - "$(BUILD_DIR)/Debug$(EFFECTIVE_PLATFORM_NAME)/include/**"
-        - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)/include/**"
-      INFOPLIST_FILE: Client/Info.plist
+      # CODE_SIGN_ENTITLEMENTS: "$(inherit)Client/Entitlements/FennecApplication.entitlements"
+      # CODE_SIGN_IDENTITY: iPhone Developer
+      # DEVELOPMENT_TEAM: 43AQ936H96
+      # ENABLE_BITCODE: "NO"
+      # FRAMEWORK_SEARCH_PATHS:
+      #   - "$(inherited)"
+      #   - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)"
+      #   - "$(PROJECT_DIR)/Carthage/Build/iOS"
+      # HEADER_SEARCH_PATHS:
+      #   - "$(inherited)"
+      #   - "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+      #   - "$(SRCROOT)"
+      #   - "$(SDKROOT)/usr/include/libxml2"
+      #   - "$(BUILD_DIR)/Debug$(EFFECTIVE_PLATFORM_NAME)/include/**"
+      #   - "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)/include/**"
+      # INFOPLIST_FILE: Client/Info.plist
       IPHONEOS_DEPLOYMENT_TARGET: "11.0"
-      LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
-      OTHER_LDFLAGS:
-        - "-ObjC"
-        - "-lxml2"
-        - "-framework"
-        - AssetsLibrary
-        - "-framework"
-        - CoreText
-        - "-framework"
-        - CoreTelephony
-        - "-framework"
-        - SystemConfiguration
-        - "-framework"
-        - QuartzCore
-        - "-framework"
-        - CoreVideo
-        - "-framework"
-        - AVFoundation
-        - "-framework"
-        - CoreMedia
+      # LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+      # OTHER_LDFLAGS:
+      #   - "-ObjC"
+      #   - "-lxml2"
+      #   - "-framework"
+      #   - AssetsLibrary
+      #   - "-framework"
+      #   - CoreText
+      #   - "-framework"
+      #   - CoreTelephony
+      #   - "-framework"
+      #   - SystemConfiguration
+      #   - "-framework"
+      #   - QuartzCore
+      #   - "-framework"
+      #   - CoreVideo
+      #   - "-framework"
+      #   - AVFoundation
+      #   - "-framework"
+      #   - CoreMedia
       OTHER_SWIFT_FLAGS: "-DMOZ_CHANNEL_FENNEC -DMOZ_TARGET_CLIENT"
       PROVISIONING_PROFILE_SPECIFIER: Fennec Development
       SWIFT_OPTIMIZATION_LEVEL: "-Onone"
@@ -111,8 +111,12 @@ targets:
       HEADER_SEARCH_PATHS:
         - "$(inherited)"
         - "$SRCROOT/Shared"
+        - "$(SDKROOT)/usr/include/libxml2"
       PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Storage
       PRODUCT_NAME: $(TARGET_NAME)
+      OTHER_LDFLAGS:
+        - "-ObjC"
+        - "-lxml2"
     dependencies:
       - target: Shared
       - carthage: XCGLogger
@@ -166,6 +170,88 @@ targets:
       - target: Account
       - target: Storage
       - target: SyncTelemetry
+  NotificationService:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: "Extensions"
+        includes:
+          - "NotificationService/*.swift"
+      - path: Providers
+        includes:
+          - "Profile.swift"
+          - "SyncStatusResolver.swift"
+      - "Account/FxAPushMessageHandler.swift"
+    settings:
+      INFOPLIST_FILE: Extensions/NotificationService/Info.plist
+      HEADER_SEARCH_PATHS:
+        - "$(inherited)"
+        - "$SRCROOT/Storage"
+        - "$SRCROOT/Shared"
+        - "$(SDKROOT)/usr/include/libxml2"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.NotificationService
+      PRODUCT_NAME: $(TARGET_NAME)
+      OTHER_LDFLAGS:
+        - "-ObjC"
+        - "$(SDKROOT)/usr/include/libxml2"
+      ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: 'NO'
+      ALWAYS_SEARCH_USER_PATHS: 'NO'
+      CLANG_ANALYZER_NONNULL: 'YES'
+      CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION: YES_AGGRESSIVE
+      CLANG_CXX_LANGUAGE_STANDARD: gnu++0x
+      CLANG_CXX_LIBRARY: libc++
+      CLANG_ENABLE_MODULES: 'YES'
+      CLANG_ENABLE_OBJC_ARC: 'YES'
+      CLANG_WARN_BOOL_CONVERSION: 'YES'
+      CLANG_WARN_CONSTANT_CONVERSION: 'YES'
+      CLANG_WARN_DIRECT_OBJC_ISA_USAGE: YES_ERROR
+      CLANG_WARN_DOCUMENTATION_COMMENTS: 'YES'
+      CLANG_WARN_EMPTY_BODY: 'YES'
+      CLANG_WARN_ENUM_CONVERSION: 'YES'
+      CLANG_WARN_INFINITE_RECURSION: 'YES'
+      CLANG_WARN_INT_CONVERSION: 'YES'
+      CLANG_WARN_OBJC_ROOT_CLASS: YES_ERROR
+      CLANG_WARN_SUSPICIOUS_MOVE: 'YES'
+      CLANG_WARN_UNREACHABLE_CODE: 'YES'
+      CLANG_WARN__DUPLICATE_METHOD_MATCH: 'YES'
+      CODE_SIGN_ENTITLEMENTS: "$(inherit)Extensions/Entitlements/Fennec.entitlements"
+      CODE_SIGN_IDENTITY: iPhone Developer
+      CODE_SIGN_IDENTITY[sdk=iphoneos*]: iPhone Developer
+      COPY_PHASE_STRIP: 'NO'
+      DEBUG_INFORMATION_FORMAT: dwarf
+      DEVELOPMENT_TEAM: 43AQ936H96
+      ENABLE_BITCODE: 'NO'
+      ENABLE_STRICT_OBJC_MSGSEND: 'YES'
+      ENABLE_TESTABILITY: 'YES'
+      GCC_C_LANGUAGE_STANDARD: gnu99
+      GCC_DYNAMIC_NO_PIC: 'NO'
+      GCC_NO_COMMON_BLOCKS: 'YES'
+      GCC_OPTIMIZATION_LEVEL: '0'
+      GCC_WARN_64_TO_32_BIT_CONVERSION: 'YES'
+      GCC_WARN_ABOUT_RETURN_TYPE: YES_ERROR
+      GCC_WARN_UNDECLARED_SELECTOR: 'YES'
+      GCC_WARN_UNINITIALIZED_AUTOS: YES_AGGRESSIVE
+      GCC_WARN_UNUSED_FUNCTION: 'YES'
+      GCC_WARN_UNUSED_VARIABLE: 'YES'
+      INFOPLIST_FILE: Extensions/NotificationService/Info.plist
+      LD_RUNPATH_SEARCH_PATHS: "@executable_path/../../Frameworks"
+      MTL_ENABLE_DEBUG_INFO: 'YES'
+      ONLY_ACTIVE_ARCH: 'YES'
+      OTHER_LDFLAGS: ''
+      OTHER_SWIFT_FLAGS: "-DMOZ_CHANNEL_FENNEC -DMOZ_TARGET_NOTIFICATIONSERVICE"
+      PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Fennec.NotificationService
+      PRODUCT_NAME: "$(TARGET_NAME)"
+      PROVISIONING_PROFILE: 2ca221e2-03db-45b5-ad98-41b0caa46000
+      PROVISIONING_PROFILE_SPECIFIER: Fennec NotificationService Development
+      SDKROOT: iphoneos
+      SKIP_INSTALL: 'YES'
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      SWIFT_VERSION: '5.0'
+    dependencies:
+      - target: Shared
+      - target: Storage
+      - target: Sync
   Client:
     type: application
     platform: iOS
@@ -253,6 +339,7 @@ targets:
     dependencies:
       - sdk: Accelerate.framework
       - sdk: SafariServices.framework
+      - target: NotificationService
       - target: Shared
       - target: Account
       - target: Storage
