@@ -234,11 +234,11 @@ targets:
       INFOPLIST_FILE: Client/Info.plist
       SWIFT_OBJC_BRIDGING_HEADER: "$SRCROOT/Client/Client-Bridging-Header.h"
       HEADER_SEARCH_PATHS:
+        - "$SRCROOT"
         - "$SRCROOT/Client/Frontend/Reader"
         - "$SRCROOT/Client/Utils"
         - "$SRCROOT/ThirdParty/UIImageViewAligned"
         - "$SRCROOT/ThirdParty/Apple"
-        - "$SRCROOT"
         - "$SRCROOT/Shared"
         - "$SRCROOT/Storage"
       PRODUCT_BUNDLE_IDENTIFIER: org.mozilla.ios.Fennec
